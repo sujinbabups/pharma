@@ -23,4 +23,4 @@ To run this project, you need the following:
 
    ```bash
    git clone https://github.com/sujinbabups/pharma.git
-   cd pharmacy-network
+   cd pharma

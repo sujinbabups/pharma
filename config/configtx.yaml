@@ -1,0 +1,160 @@
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: ../organizations/ordererOrganizations/example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+    OrdererEndpoints:
+      - orderer.example.com:7050
+
+  - &ManufacturerOrg
+    Name: manufactureMSP
+    ID: manufactureMSP
+    MSPDir: ../organizations/peerOrganizations/manufacture.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('manufactureMSP.admin', 'manufactureMSP.peer', 'manufactureMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('manufactureMSP.admin', 'manufactureMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('manufactureMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('manufactureMSP.peer')"
+
+  - &DistributorOrg
+    Name: distributorMSP
+    ID: distributorMSP
+    MSPDir: ../organizations/peerOrganizations/distributor.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('distributorMSP.admin', 'distributorMSP.peer', 'distributorMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('distributorMSP.admin', 'distributorMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('distributorMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('distributorMSP.peer')"
+
+  - &PharmacyOrg
+    Name: pharmacyMSP
+    ID: pharmacyMSP
+    MSPDir: ../organizations/peerOrganizations/pharmacy.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('pharmacyMSP.admin', 'pharmacyMSP.peer', 'pharmacyMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('pharmacyMSP.admin', 'pharmacyMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('pharmacyMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('pharmacyMSP.peer')"
+
+Capabilities:  
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_5: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  Addresses:
+    - orderer.example.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  ChannelUsingRaft:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      OrdererType: etcdraft
+      EtcdRaft:
+        Consenters:
+          - Host: orderer.example.com
+            Port: 7050
+            ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+            ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+      Organizations:
+        - *OrdererOrg
+      Capabilities: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *ManufacturerOrg
+        - *DistributorOrg
+        - *PharmacyOrg
+      Capabilities: *ApplicationCapabilities

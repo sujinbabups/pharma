@@ -24,3 +24,9 @@ To run this project, you need the following:
    ```bash
    git clone https://github.com/sujinbabups/pharma.git
    cd pharma
+2. **Start the Network**
+      ```bash
+      ./startnetwork
+3.  **Stop Network**
+      ```bash
+      ./stopnetwork

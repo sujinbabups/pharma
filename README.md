@@ -22,5 +22,5 @@ To run this project, you need the following:
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/pharmacy-network.git
+   git clone https://github.com/sujinbabups/pharma.git
    cd pharmacy-network
